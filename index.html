@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>合约计算器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 网页图标 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+    
+    <style>
+        :root {
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --input-bg: #ffffff;
+            --input-border: #dddddd;
+            --result-bg: #f0f8ff;
+            --primary-color: #4CAF50;
+            --primary-hover: #45a049;
+            --secondary-color: #2196F3;
+            --button-text: white;
+            --result-border: #4CAF50;
+            --header-bg: #4CAF50;
+            --header-text: white;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --card-radius: 12px;
+            --input-radius: 8px;
+        }
+        
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --input-bg: #2d2d2d;
+            --input-border: #444444;
+            --result-bg: #2c3e50;
+            --primary-color: #2e7d32;
+            --primary-hover: #1b5e20;
+            --secondary-color: #1976D2;
+            --button-text: #e0e0e0;
+            --result-border: #2e7d32;
+            --header-bg: #2e7d32;
+            --header-text: #e0e0e0;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .calculators-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 1240px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--card-bg);
+            border-radius: var(--card-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .header {
+            background-color: var(--header-bg);
+            color: var(--header-text);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+        
+        .theme-toggle {
+            background-color: transparent;
+            color: var(--header-text);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+        
+        .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .main-content {
+            padding: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            padding-left: 35px;
+            border: 1px solid var(--input-border);
+            border-radius: var(--input-radius);
+            overflow: hidden;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+        
+        /* 移除滚动条 */
+        input::-webkit-inner-spin-button, 
+        input::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        
+        input[type=number] {
+            -moz-appearance: textfield; /* Firefox */
+            appearance: textfield; /* 标准语法 */
+        }
+        
+        input {
+            -moz-appearance: textfield; /* Firefox */
+        }
+        
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            gap: 15px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: var(--button-text);
+            padding: 12px 20px;
+            border: none;
+            border-radius: var(--input-radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        button.secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        button.secondary:hover {
+            background-color: #1565C0;
+        }
+        
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: var(--result-bg);
+            border-radius: var(--input-radius);
+            border-left: 4px solid var(--result-border);
+            transition: all 0.3s ease;
+        }
+        
+        .result h3 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .result-item {
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            padding-bottom: 8px;
+            border-bottom: 1px dashed var(--input-border);
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .result-label {
+            font-weight: bold;
+        }
+        
+        .result-value {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fadeIn {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 1240px) {
+            .calculators-container {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            input, select, button {
+                padding: 10px;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+        }
+        
+        /* 表格样式 */
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            border-radius: var(--input-radius);
+            overflow: hidden;
+        }
+        
+        .records-table th, .records-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--input-border);
+        }
+        
+        .records-table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+        
+        .records-table tr:hover {
+            background-color: var(--result-bg);
+        }
+        
+        .records-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .delete-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 5px;
+            border-radius: 50%;
+        }
+        
+        .delete-btn:hover {
+            color: #f44336;
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+        
+        /* 记录容器的滚动条样式 */
+        #recordsContainer::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #recordsContainer::-webkit-scrollbar-track {
+            background: var(--bg-color);
+            border-radius: 4px;
+        }
+        
+        #recordsContainer::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+        
+        #recordsContainer::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-hover);
+        }
+    </style>
+</head>
+<body>
+    <div class="calculators-container">
+        <!-- 爆仓计算器 -->
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-bolt"></i> 合约爆仓计算器</h1>
+                <button id="themeToggle" class="theme-toggle" title="切换主题">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+            
+            <div class="main-content">
+                <div class="form-group">
+                    <label for="entrancePrice"><i class="fas fa-tag"></i> 入场价格</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-dollar-sign input-icon"></i>
+                        <input type="number" id="entrancePrice" step="0.00000001" min="0" placeholder="请输入入场价格...">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="leverage"><i class="fas fa-chart-line"></i> 杠杆倍数 (1-100倍)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-times input-icon"></i>
+                        <input type="number" id="leverage" min="1" max="100" value="10" placeholder="请选择杠杆倍数...">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="direction"><i class="fas fa-exchange-alt"></i> 交易方向</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-random input-icon"></i>
+                        <select id="direction">
+                            <option value="long">做多</option>
+                            <option value="short">做空</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="marginRatio"><i class="fas fa-percent"></i> 维持保证金率 (%)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-percentage input-icon"></i>
+                        <input type="number" id="marginRatio" min="0" step="0.01" value="0.5" placeholder="请输入维持保证金率...">
+                    </div>
+                </div>
+                
+                <div class="btn-container">
+                    <button onclick="calculateLiquidationPrice()">
+                        <i class="fas fa-bolt"></i> 计算爆仓价格
+                    </button>
+                    <button class="secondary" onclick="resetLiquidationForm()">
+                        <i class="fas fa-redo"></i> 重置
+                    </button>
+                    <button class="secondary" onclick="saveLiquidationResult()" id="saveLiquidationBtn" style="display:none;">
+                        <i class="fas fa-save"></i> 保存结果
+                    </button>
+                </div>
+                
+                <div id="result" class="result" style="display:none;">
+                    <h3><i class="fas fa-info-circle"></i> 计算结果</h3>
+                    <div class="result-item">
+                        <span class="result-label">爆仓价格:</span>
+                        <span id="liquidationPrice" class="result-value"></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">价格变动百分比:</span>
+                        <span id="priceChangePercent" class="result-value"></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">当前交易方向:</span>
+                        <span id="positionDirection" class="result-value"></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">使用杠杆:</span>
+                        <span id="usedLeverage" class="result-value"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 收益计算器 -->
+        <div class="container">
+            <div class="header">
+                <h1><i class="fas fa-chart-line"></i> 合约收益计算器</h1>
+                <div style="width: 40px;"></div> <!-- 占位，保持对称 -->
+            </div>
+            
+            <div class="main-content">
+                <div class="form-group">
+                    <label for="profitEntrancePrice"><i class="fas fa-tag"></i> 入场价格</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-dollar-sign input-icon"></i>
+                        <input type="number" id="profitEntrancePrice" step="0.00000001" min="0" placeholder="请输入入场价格...">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="profitExitPrice"><i class="fas fa-sign-out-alt"></i> 出场价格</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-dollar-sign input-icon"></i>
+                        <input type="number" id="profitExitPrice" step="0.00000001" min="0" placeholder="请输入出场价格...">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="profitLeverage"><i class="fas fa-chart-line"></i> 杠杆倍数 (1-100倍)</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-times input-icon"></i>
+                        <input type="number" id="profitLeverage" min="1" max="100" value="10" placeholder="请选择杠杆倍数...">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="profitDirection"><i class="fas fa-exchange-alt"></i> 交易方向</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-random input-icon"></i>
+                        <select id="profitDirection">
+                            <option value="long">做多</option>
+                            <option value="short">做空</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="investmentAmount"><i class="fas fa-money-bill-wave"></i> 投资金额</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-dollar-sign input-icon"></i>
+                        <input type="number" id="investmentAmount" min="0" step="0.01" value="1000" placeholder="请输入投资金额...">
+                    </div>
+                </div>
+                
+                <div class="btn-container">
+                    <button onclick="calculateProfit()">
+                        <i class="fas fa-calculator"></i> 计算收益
+                    </button>
+                    <button class="secondary" onclick="resetProfitForm()">
+                        <i class="fas fa-redo"></i> 重置
+                    </button>
+                    <button class="secondary" onclick="saveProfitResult()" id="saveProfitBtn" style="display:none;">
+                        <i class="fas fa-save"></i> 保存结果
+                    </button>
+                </div>
+                
+                <div id="profitResult" class="result" style="display:none;">
+                    <h3><i class="fas fa-info-circle"></i> 计算结果</h3>
+                    <div class="result-item">
+                        <span class="result-label">收益金额:</span>
+                        <span id="profitAmount" class="result-value"></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">收益率:</span>
+                        <span id="profitPercentage" class="result-value"></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">价格变动:</span>
+                        <span id="priceChange" class="result-value"></span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">价格变动百分比:</span>
+                        <span id="profitPriceChangePercent" class="result-value"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 历史记录查看区域 -->
+        <div class="container" style="max-width: 1200px; margin-top: 30px;">
+            <div class="header">
+                <h1><i class="fas fa-history"></i> 计算记录</h1>
+                <div style="width: 40px;"></div>
+            </div>
+            
+            <div class="main-content">
+                <div class="form-group">
+                    <label for="recordType"><i class="fas fa-filter"></i> 记录类型</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-list input-icon"></i>
+                        <select id="recordType" onchange="showRecords()">
+                            <option value="liquidation">爆仓计算记录</option>
+                            <option value="profit">收益计算记录</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="noRecordsMessage" style="display:none; text-align:center; padding: 20px;">
+                    <i class="fas fa-info-circle"></i> 暂无保存记录
+                </div>
+                
+                <div id="recordsContainer" style="max-height: 400px; overflow-y: auto; margin-top: 20px;">
+                    <!-- 记录将在这里显示 -->
+                </div>
+                
+                <div class="btn-container" style="margin-top: 20px;">
+                    <button class="secondary" onclick="clearRecords()">
+                        <i class="fas fa-trash-alt"></i> 清除所有记录
+                    </button>
+                    <button onclick="exportRecords()">
+                        <i class="fas fa-file-export"></i> 导出记录
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        © 2025 合约计算器 - 仅供学习参考，不构成投资建议
+    </div>
+
+    <script>
+        // 主题切换功能
+        const themeToggle = document.getElementById('themeToggle');
+        const htmlElement = document.documentElement;
+        const toggleIcon = themeToggle.querySelector('i');
+        
+        // 检查本地存储中的主题设置
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            htmlElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            htmlElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+        });
+        
+        function updateThemeIcon(theme) {
+            if (theme === 'dark') {
+                toggleIcon.className = 'fas fa-sun';
+            } else {
+                toggleIcon.className = 'fas fa-moon';
+            }
+        }
+        
+        function calculateLiquidationPrice() {
+            // 获取输入值
+            const entrancePrice = parseFloat(document.getElementById("entrancePrice").value);
+            const leverage = parseFloat(document.getElementById("leverage").value);
+            const direction = document.getElementById("direction").value;
+            const marginRatio = parseFloat(document.getElementById("marginRatio").value) / 100;
+            
+            // 验证输入
+            if (isNaN(entrancePrice) || entrancePrice <= 0) {
+                alert("请输入有效的入场价格");
+                return;
+            }
+            
+            if (isNaN(leverage) || leverage < 1 || leverage > 100) {
+                alert("杠杆倍数必须在1到100之间");
+                return;
+            }
+            
+            if (isNaN(marginRatio) || marginRatio <= 0) {
+                alert("请输入有效的维持保证金率");
+                return;
+            }
+            
+            // 计算爆仓价格
+            let liquidationPrice;
+            if (direction === "long") {
+                // 做多爆仓价格 = 入场价格 * (1 - (1 / 杠杆) + 维持保证金率)
+                liquidationPrice = entrancePrice * (1 - (1 / leverage) + marginRatio);
+            } else {
+                // 做空爆仓价格 = 入场价格 * (1 + (1 / 杠杆) - marginRatio)
+                liquidationPrice = entrancePrice * (1 + (1 / leverage) - marginRatio);
+            }
+            
+            // 计算价格变动百分比
+            let priceChangePercent;
+            if (direction === "long") {
+                priceChangePercent = ((liquidationPrice - entrancePrice) / entrancePrice) * 100;
+            } else {
+                priceChangePercent = ((entrancePrice - liquidationPrice) / entrancePrice) * 100;
+            }
+            
+            // 显示结果
+            document.getElementById("liquidationPrice").textContent = liquidationPrice.toFixed(10);
+            document.getElementById("priceChangePercent").textContent = Math.abs(priceChangePercent).toFixed(2) + "%";
+            document.getElementById("positionDirection").textContent = direction === "long" ? "做多" : "做空";
+            document.getElementById("usedLeverage").textContent = leverage + "x";
+            
+            const resultElement = document.getElementById("result");
+            resultElement.style.display = "block";
+            
+            // 显示保存按钮
+            document.getElementById("saveLiquidationBtn").style.display = "flex";
+            
+            // 添加淡入动画效果
+            resultElement.classList.remove("fadeIn");
+            void resultElement.offsetWidth; // 触发DOM重绘
+            resultElement.classList.add("fadeIn");
+        }
+        
+        function resetLiquidationForm() {
+            document.getElementById("entrancePrice").value = "";
+            document.getElementById("leverage").value = "10";
+            document.getElementById("direction").value = "long";
+            document.getElementById("marginRatio").value = "0.5";
+            document.getElementById("result").style.display = "none";
+            document.getElementById("saveLiquidationBtn").style.display = "none";
+        }
+        
+        function calculateProfit() {
+            // 获取输入值
+            const entrancePrice = parseFloat(document.getElementById("profitEntrancePrice").value);
+            const exitPrice = parseFloat(document.getElementById("profitExitPrice").value);
+            const leverage = parseFloat(document.getElementById("profitLeverage").value);
+            const direction = document.getElementById("profitDirection").value;
+            const investmentAmount = parseFloat(document.getElementById("investmentAmount").value);
+            
+            // 验证输入
+            if (isNaN(entrancePrice) || entrancePrice <= 0) {
+                alert("请输入有效的入场价格");
+                return;
+            }
+            
+            if (isNaN(exitPrice) || exitPrice <= 0) {
+                alert("请输入有效的出场价格");
+                return;
+            }
+            
+            if (isNaN(leverage) || leverage < 1 || leverage > 100) {
+                alert("杠杆倍数必须在1到100之间");
+                return;
+            }
+            
+            if (isNaN(investmentAmount) || investmentAmount <= 0) {
+                alert("请输入有效的投资金额");
+                return;
+            }
+            
+            // 计算价格变动百分比
+            let priceChangePercent;
+            if (direction === "long") {
+                priceChangePercent = ((exitPrice - entrancePrice) / entrancePrice) * 100;
+            } else {
+                priceChangePercent = ((entrancePrice - exitPrice) / entrancePrice) * 100;
+            }
+            
+            // 计算收益
+            const profitPercent = priceChangePercent * leverage;
+            const profitAmount = investmentAmount * (profitPercent / 100);
+            
+            // 显示结果
+            document.getElementById("profitAmount").textContent = profitAmount.toFixed(2) + " (" + (profitAmount >= 0 ? "+" : "") + profitPercent.toFixed(2) + "%)";
+            document.getElementById("profitPercentage").textContent = (profitAmount >= 0 ? "+" : "") + profitPercent.toFixed(2) + "%";
+            document.getElementById("priceChange").textContent = Math.abs(exitPrice - entrancePrice).toFixed(8);
+            document.getElementById("profitPriceChangePercent").textContent = (priceChangePercent >= 0 ? "+" : "") + priceChangePercent.toFixed(2) + "%";
+            
+            // 为收益金额添加颜色
+            const profitAmountElement = document.getElementById("profitAmount");
+            if (profitAmount > 0) {
+                profitAmountElement.style.color = "#4CAF50"; // 绿色，盈利
+            } else if (profitAmount < 0) {
+                profitAmountElement.style.color = "#f44336"; // 红色，亏损
+            } else {
+                profitAmountElement.style.color = "#757575"; // 灰色，持平
+            }
+            
+            const resultElement = document.getElementById("profitResult");
+            resultElement.style.display = "block";
+            
+            // 显示保存按钮
+            document.getElementById("saveProfitBtn").style.display = "flex";
+            
+            // 添加淡入动画效果
+            resultElement.classList.remove("fadeIn");
+            void resultElement.offsetWidth; // 触发DOM重绘
+            resultElement.classList.add("fadeIn");
+        }
+        
+        function resetProfitForm() {
+            document.getElementById("profitEntrancePrice").value = "";
+            document.getElementById("profitExitPrice").value = "";
+            document.getElementById("profitLeverage").value = "10";
+            document.getElementById("profitDirection").value = "long";
+            document.getElementById("investmentAmount").value = "1000";
+            document.getElementById("profitResult").style.display = "none";
+            document.getElementById("saveProfitBtn").style.display = "none";
+        }
+        
+        // 保存爆仓计算结果
+        function saveLiquidationResult() {
+            const entrancePrice = document.getElementById("entrancePrice").value;
+            const leverage = document.getElementById("leverage").value;
+            const direction = document.getElementById("direction").value;
+            const marginRatio = document.getElementById("marginRatio").value;
+            const liquidationPrice = document.getElementById("liquidationPrice").textContent;
+            const priceChangePercent = document.getElementById("priceChangePercent").textContent;
+            
+            // 获取已保存的数据
+            let savedResults = JSON.parse(localStorage.getItem('liquidationResults') || '[]');
+            
+            // 添加新结果
+            savedResults.push({
+                date: new Date().toLocaleString(),
+                entrancePrice,
+                leverage,
+                direction,
+                marginRatio,
+                liquidationPrice,
+                priceChangePercent
+            });
+            
+            // 保存到本地存储
+            localStorage.setItem('liquidationResults', JSON.stringify(savedResults));
+            
+            // 提示用户
+            alert('计算结果已保存！');
+        }
+        
+        // 保存收益计算结果
+        function saveProfitResult() {
+            const entrancePrice = document.getElementById("profitEntrancePrice").value;
+            const exitPrice = document.getElementById("profitExitPrice").value;
+            const leverage = document.getElementById("profitLeverage").value;
+            const direction = document.getElementById("profitDirection").value;
+            const investmentAmount = document.getElementById("investmentAmount").value;
+            const profitAmount = document.getElementById("profitAmount").textContent;
+            const profitPercentage = document.getElementById("profitPercentage").textContent;
+            const priceChange = document.getElementById("priceChange").textContent;
+            const priceChangePercent = document.getElementById("profitPriceChangePercent").textContent;
+            
+            // 获取已保存的数据
+            let savedResults = JSON.parse(localStorage.getItem('profitResults') || '[]');
+            
+            // 添加新结果
+            savedResults.push({
+                date: new Date().toLocaleString(),
+                entrancePrice,
+                exitPrice,
+                leverage,
+                direction,
+                investmentAmount,
+                profitAmount,
+                profitPercentage,
+                priceChange,
+                priceChangePercent
+            });
+            
+            // 保存到本地存储
+            localStorage.setItem('profitResults', JSON.stringify(savedResults));
+            
+            // 提示用户
+            alert('计算结果已保存！');
+        }
+        
+        // 显示保存的记录
+        function showRecords() {
+            const recordType = document.getElementById("recordType").value;
+            const recordsContainer = document.getElementById("recordsContainer");
+            const noRecordsMessage = document.getElementById("noRecordsMessage");
+            
+            // 清空容器
+            recordsContainer.innerHTML = "";
+            
+            // 获取对应类型的记录
+            const key = recordType === "liquidation" ? "liquidationResults" : "profitResults";
+            const records = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            if (records.length === 0) {
+                recordsContainer.style.display = "none";
+                noRecordsMessage.style.display = "block";
+                return;
+            }
+            
+            recordsContainer.style.display = "block";
+            noRecordsMessage.style.display = "none";
+            
+            // 创建表格
+            const table = document.createElement("table");
+            table.className = "records-table";
+            
+            // 创建表头
+            const thead = document.createElement("thead");
+            const headerRow = document.createElement("tr");
+            
+            // 定义表头
+            let headers;
+            if (recordType === "liquidation") {
+                headers = ["日期", "入场价格", "杠杆倍数", "交易方向", "维持保证金率", "爆仓价格", "价格变动百分比", "操作"];
+            } else {
+                headers = ["日期", "入场价格", "出场价格", "杠杆倍数", "交易方向", "投资金额", "收益", "收益率", "价格变动", "变动百分比", "操作"];
+            }
+            
+            headers.forEach(headerText => {
+                const th = document.createElement("th");
+                th.textContent = headerText;
+                th.style.padding = "10px";
+                th.style.borderBottom = "2px solid var(--input-border)";
+                th.style.textAlign = "left";
+                headerRow.appendChild(th);
+            });
+            
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+            
+            // 创建表格内容
+            const tbody = document.createElement("tbody");
+            
+            records.forEach((record, index) => {
+                const row = document.createElement("tr");
+                row.style.borderBottom = "1px solid var(--input-border)";
+                
+                // 根据记录类型创建不同的单元格
+                if (recordType === "liquidation") {
+                    // 爆仓计算记录
+                    const cells = [
+                        record.date,
+                        record.entrancePrice,
+                        record.leverage + "x",
+                        record.direction === "long" ? "做多" : "做空",
+                        record.marginRatio + "%",
+                        record.liquidationPrice,
+                        record.priceChangePercent
+                    ];
+                    
+                    cells.forEach(cellText => {
+                        const td = document.createElement("td");
+                        td.textContent = cellText;
+                        td.style.padding = "10px";
+                        row.appendChild(td);
+                    });
+                } else {
+                    // 收益计算记录
+                    const cells = [
+                        record.date,
+                        record.entrancePrice,
+                        record.exitPrice,
+                        record.leverage + "x",
+                        record.direction === "long" ? "做多" : "做空",
+                        record.investmentAmount,
+                        record.profitAmount,
+                        record.profitPercentage,
+                        record.priceChange,
+                        record.priceChangePercent
+                    ];
+                    
+                    cells.forEach(cellText => {
+                        const td = document.createElement("td");
+                        td.textContent = cellText;
+                        td.style.padding = "10px";
+                        row.appendChild(td);
+                    });
+                }
+                
+                // 添加删除按钮
+                const deleteCell = document.createElement("td");
+                deleteCell.style.padding = "10px";
+                
+                const deleteButton = document.createElement("button");
+                deleteButton.innerHTML = '<i class="fas fa-trash"></i>';
+                deleteButton.className = "delete-btn";
+                deleteButton.title = "删除此记录";
+                
+                deleteButton.onclick = function() {
+                    deleteRecord(recordType, index);
+                };
+                
+                deleteCell.appendChild(deleteButton);
+                row.appendChild(deleteCell);
+                
+                tbody.appendChild(row);
+            });
+            
+            table.appendChild(tbody);
+            recordsContainer.appendChild(table);
+        }
+        
+        // 删除单条记录
+        function deleteRecord(recordType, index) {
+            const key = recordType === "liquidation" ? "liquidationResults" : "profitResults";
+            let records = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            // 删除指定索引的记录
+            records.splice(index, 1);
+            
+            // 更新本地存储
+            localStorage.setItem(key, JSON.stringify(records));
+            
+            // 重新显示记录
+            showRecords();
+        }
+        
+        // 清除所有记录
+        function clearRecords() {
+            const recordType = document.getElementById("recordType").value;
+            const key = recordType === "liquidation" ? "liquidationResults" : "profitResults";
+            
+            if (confirm(`确定要清除所有${recordType === "liquidation" ? "爆仓" : "收益"}计算记录吗？`)) {
+                localStorage.removeItem(key);
+                showRecords();
+            }
+        }
+        
+        // 导出记录
+        function exportRecords() {
+            const recordType = document.getElementById("recordType").value;
+            const key = recordType === "liquidation" ? "liquidationResults" : "profitResults";
+            const records = JSON.parse(localStorage.getItem(key) || '[]');
+            
+            if (records.length === 0) {
+                alert("没有可导出的记录");
+                return;
+            }
+            
+            // 转换为CSV格式
+            let csv;
+            if (recordType === "liquidation") {
+                csv = "日期,入场价格,杠杆倍数,交易方向,维持保证金率,爆仓价格,价格变动百分比\n";
+                records.forEach(record => {
+                    csv += `"${record.date}",${record.entrancePrice},${record.leverage},${record.direction === "long" ? "做多" : "做空"},${record.marginRatio},${record.liquidationPrice},${record.priceChangePercent}\n`;
+                });
+            } else {
+                csv = "日期,入场价格,出场价格,杠杆倍数,交易方向,投资金额,收益,收益率,价格变动,变动百分比\n";
+                records.forEach(record => {
+                    csv += `"${record.date}",${record.entrancePrice},${record.exitPrice},${record.leverage},${record.direction === "long" ? "做多" : "做空"},${record.investmentAmount},"${record.profitAmount}","${record.profitPercentage}",${record.priceChange},"${record.priceChangePercent}"\n`;
+                });
+            }
+            
+            // 创建下载链接
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `${recordType === "liquidation" ? "爆仓" : "收益"}计算记录_${new Date().toLocaleDateString()}.csv`);
+            document.body.appendChild(link);
+            
+            // 触发下载
+            link.click();
+            
+            // 清理
+            setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            }, 100);
+        }
+        
+        // 页面加载时显示记录
+        window.addEventListener('load', function() {
+            showRecords();
+        });
+    </script>
+</body>
+</html>
